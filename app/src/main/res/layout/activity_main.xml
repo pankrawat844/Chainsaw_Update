@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:clipChildren="false"
+    tools:context="com.example.philip.chainsaw.MainActivity">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/header_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layoutDirection="rtl"
+        android:background="@color/colorPrimary">
+        <ImageButton
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@mipmap/chat_menu"
+            android:background="#01000000"
+            android:onClick="goToMessages"/>
+        <ImageButton
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginRight="110dp"
+            android:src="@mipmap/recs_icon"
+            android:background="#01000000"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/recsLoadingLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/header_bar">
+        <ProgressBar
+            android:id="@+id/progressBarRecs"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            />
+        <TextView
+            android:id="@+id/progressTextRecs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/progressBarRecs"
+            android:layout_centerHorizontal="true"
+            android:text="Loading Recommendations.."
+            />
+    <link.fls.swipestack.SwipeStack
+        android:id="@+id/profileStackView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:rotation="0"
+        android:padding="0dp"
+        app:stack_size="3"
+        app:stack_spacing="1dp"
+        app:stack_rotation="0"/>
+        </RelativeLayout>
+
+
+
+
+
+
+</RelativeLayout>
