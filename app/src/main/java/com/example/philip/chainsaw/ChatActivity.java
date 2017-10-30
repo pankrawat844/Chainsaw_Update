@@ -65,6 +65,7 @@ public class ChatActivity extends AppCompatActivity {
         lw.setSelection(mAdapter.getCount()-1);
     }
 
+
     public void sendMessage(View v) {
         String text = messageField.getText().toString();
         Message message = new Message(ownId, text, new Date(System.currentTimeMillis()));
