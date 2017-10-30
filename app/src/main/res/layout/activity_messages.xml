@@ -63,12 +63,12 @@
          />
     </RelativeLayout>
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/messageList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="1dp"
         android:layout_weight="1"
-        android:drawSelectorOnTop="false"></ListView>
+        android:drawSelectorOnTop="false"></android.support.v7.widget.RecyclerView>
 
 </LinearLayout>

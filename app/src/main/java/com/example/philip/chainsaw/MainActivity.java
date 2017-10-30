@@ -71,55 +71,76 @@ public class MainActivity extends AppCompatActivity {
         preferences = getSharedPreferences(PREF_FILE_NAME, MODE_PRIVATE);
         tinderToken = preferences.getString(PREF_TOKEN, "");
         users = new ArrayList<>();
-        Intent intent= getIntent();
-        String token = intent.getStringExtra("access_token");
-        TinderServiceVolley.getInstance(getApplicationContext()).auth(id, token, new CallBack() {
-            @Override
-            public void onSuccess(JSONObject response) {
-                String token = null;
-                try {
-                    token = response.getString("token");
-                    setToken(token);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        if(getIntent().getExtras()!=null) {
+            Intent intent = getIntent();
+            String token = intent.getStringExtra("access_token");
+
+            TinderServiceVolley.getInstance(getApplicationContext()).auth(id, token, new CallBack() {
+                @Override
+                public void onSuccess(JSONObject response) {
+                    String token = null;
+                    try {
+                        token = response.getString("token");
+                        String userid=response.getJSONObject("user").getString("_id");
+                        String profile_url=response.getJSONObject("user").getJSONArray("photos").getJSONObject(0).getJSONArray("processedFiles").getJSONObject(3).getString("url");
+                        setToken(token,userid,profile_url);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d("PDBug", "onSuccessAuth: " + token);
+                    TinderServiceVolley.getInstance(getApplicationContext()).getRecs(tinderToken, new CallBack() {
+                        @Override
+                        public void onSuccess(JSONObject response) {
+                            recsProgressBar.setVisibility(View.GONE);
+                            recsProgressText.setVisibility(View.GONE);
+                            addUsers(response);
+                        }
+
+                        @Override
+                        public void onFail(String msg) {
+
+                        }
+                    });
                 }
-                Log.d("PDBug", "onSuccessAuth: "+token);
-                TinderServiceVolley.getInstance(getApplicationContext()).getRecs(tinderToken, new CallBack() {
-                    @Override
-                    public void onSuccess(JSONObject response) {
-                        recsProgressBar.setVisibility(View.GONE);
-                        recsProgressText.setVisibility(View.GONE);
-                        addUsers(response);
-                    }
 
-                    @Override
-                    public void onFail(String msg) {
+                @Override
+                public void onFail(String msg) {
+                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+                    //Try with the previous acquired token from tinder in the database
+                    TinderServiceVolley.getInstance(getApplicationContext()).getRecs(tinderToken, new CallBack() {
+                        @Override
+                        public void onSuccess(JSONObject response) {
+                            recsProgressBar.setVisibility(View.GONE);
+                            recsProgressText.setVisibility(View.GONE);
+                            addUsers(response);
+                        }
 
-                    }
-                });
-            }
+                        @Override
+                        public void onFail(String msg) {
+                            Toast.makeText(getApplicationContext(), "Tinder authentication token expired,Please Login Again.", Toast.LENGTH_LONG);
+                        }
+                    });
+                }
+            });
+        }else {
+            recsProgressBar.setVisibility(View.GONE);
+            recsProgressText.setVisibility(View.GONE);
+            TinderServiceVolley.getInstance(getApplicationContext()).getRecs(tinderToken, new CallBack() {
+                @Override
+                public void onSuccess(JSONObject response) {
+                    recsProgressBar.setVisibility(View.GONE);
+                    recsProgressText.setVisibility(View.GONE);
+                    addUsers(response);
+                }
 
-            @Override
-            public void onFail(String msg) {
-            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-                //Try with the previous acquired token from tinder in the database
-                TinderServiceVolley.getInstance(getApplicationContext()).getRecs(tinderToken, new CallBack() {
-                    @Override
-                    public void onSuccess(JSONObject response) {
-                        recsProgressBar.setVisibility(View.GONE);
-                        recsProgressText.setVisibility(View.GONE);
-                        addUsers(response);
-                    }
+                @Override
+                public void onFail(String msg) {
 
-                    @Override
-                    public void onFail(String msg) {
-                        Toast.makeText(getApplicationContext(), "Tinder authentication token expired", Toast.LENGTH_LONG);
-                    }
-                });
-            }
-        });
+                }
+            });
+        }
         profileStack = (SwipeStack) findViewById(R.id.profileStackView);
-        profileStack.setZ(-1);
+        //profileStack.setZ(-1);
         //Unable to add a onTouch listener as the swipe listener intercepts the check
         //GitHub page is working on the issue
         profileStack.setListener(new SwipeStack.SwipeStackListener() {
@@ -144,7 +165,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("PDBug", "onStackEmpty: " + "Reloading");
                 TinderServiceVolley.getInstance(getApplicationContext()).getRecs(tinderToken, new CallBack() {
                     @Override
-                    public void onSuccess(JSONObject response) {
+                    public void onSuccess(JSONObject response)
+                    {
+
                         recsProgressBar.setVisibility(View.GONE);
                         recsProgressText.setVisibility(View.GONE);
                         addUsers(response);
@@ -179,10 +202,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setToken(String token) {
+    public void setToken(String token,String userid,String url)
+    {
         tinderToken = token;
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(PREF_TOKEN, tinderToken);
+        editor.putString("userid", userid);
+        editor.putString("profile_url", url);
+
         editor.apply();
         Log.d("PDBug", "setToken: " + token);
 
@@ -230,6 +257,14 @@ public class MainActivity extends AppCompatActivity {
         startActivity(i);
     }
 
+    public void logout(View v) {
+        Intent i = new Intent(getApplicationContext(), Login_Activity.class);
+        SharedPreferences.Editor editor= preferences.edit();
+        editor.clear();
+        editor.commit();
+        finish();
+        startActivity(i);
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == USER_ACTIVITY) {

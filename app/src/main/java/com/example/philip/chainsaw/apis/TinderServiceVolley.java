@@ -180,13 +180,17 @@ public class TinderServiceVolley {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d("PDBug", "onErrorResponse: "+error.getLocalizedMessage() + " " +error.networkResponse);
+                Log.d("PDBug", "onErrorResponse: "+error.getLocalizedMessage() + " " +error.toString());
+                error.printStackTrace();
             }
         }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
+                //params.put("Host", "api.gotinder.com");
                 params.put("X-Auth-Token", tinderToken);
+              //  params.put("Content-Type", "application/json");
+                params.put("User-Agent"," Tinder/4.1.4 (iPhone; iOS 8.1.3; Scale/2.00)");
                 Log.d("PDBug", "getHeaders: " + params.toString());
                 return params;
             }
@@ -257,5 +261,37 @@ public class TinderServiceVolley {
     }
 
 
+    public void unmatch(final String matchId, final String tinderToken, final String message) throws JSONException {
+        String url = "https://api.gotinder.com/user/matches/"+matchId;
+        JSONObject messageJson = new JSONObject();
+        messageJson.put("message", message);
+        JsonObjectRequest jsonObjRequest = new JsonObjectRequest(Request.Method.DELETE, url, messageJson, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    Log.d("PDBug", "onunmatchresponses: " + response.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("PDBug", "onErrorResponse: "+error.getMessage()+"\n"+error.getStackTrace() +" "+ error.getLocalizedMessage()+
+                        error.toString());
 
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("X-Auth-Token", tinderToken);
+                params.put("Content-Type", "application/json");
+                Log.d("PDBug", "getHeaders: " + params.toString());
+                return params;
+            }
+        };
+        reqQueue.add(jsonObjRequest);
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.philip.chainsaw.adapters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +24,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Custom ArrayAdapter for ListView in ChatActivity
  */
 public class MessageAdapter extends ArrayAdapter<Message> {
-    private final String ownId = "58cb16dd5ac3aa7e03bc6b12";
+    private final String ownId = "";
     private int resource;
     private ArrayList<Message> items;
     private Context context;
@@ -43,13 +44,15 @@ public class MessageAdapter extends ArrayAdapter<Message> {
         Message item = getItem(position);
         String messageText = item.getMessageText();
         LinearLayout itemView;
+        SharedPreferences preferences = context.getSharedPreferences("savedToken", 0);
 
             itemView = new LinearLayout(getContext());
             String inflater = Context.LAYOUT_INFLATER_SERVICE;
             LayoutInflater li = (LayoutInflater) getContext().getSystemService(inflater);
-            if (item.getSenderId().equals(ownId)) {
-                itemView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-                li.inflate(resource, itemView, true);
+            if (item.getSenderId().equals(preferences.getString("userid",""))) {
+                li.inflate(R.layout.message_send_item, itemView, true);
+                ImageView chatPic = (ImageView) itemView.findViewById(R.id.chat_picIW);
+                Picasso.with(context).load(preferences.getString("profile_url","")).into(chatPic);
             } else {
                 li.inflate(R.layout.message_received_item, itemView, true);
                 ImageView chatPic = (ImageView) itemView.findViewById(R.id.chat_picIW);

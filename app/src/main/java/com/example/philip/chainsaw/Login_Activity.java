@@ -1,12 +1,14 @@
 package com.example.philip.chainsaw;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -15,6 +17,8 @@ import java.util.Map;
 
 public class Login_Activity extends AppCompatActivity {
     String url="https://www.facebook.com/v2.6/dialog/oauth?redirect_uri=fb464891386855067%3A%2F%2Fauthorize%2F&scope=user_birthday,user_photos,user_education_history,email,user_relationship_details,user_friends,user_work_history,user_likes&response_type=token%2Csigned_request&client_id=464891386855067";
+    public static final String PREF_FILE_NAME = "savedToken";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,8 +34,13 @@ public class Login_Activity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-
+        SharedPreferences sharedPreferences= getSharedPreferences(PREF_FILE_NAME,0);
+        if(sharedPreferences.contains("Token"))
+        {
+            Intent intent = new Intent(Login_Activity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
         Uri uriData = getIntent().getData();
         if (uriData == null) {
 
@@ -44,12 +53,18 @@ public class Login_Activity extends AppCompatActivity {
 
 
             Map<String, String> queryParams = splitQuery(uriData.toString());
-                String accesstoken = queryParams.get("access_token");
-                Intent intent= new Intent(Login_Activity.this,MainActivity.class);
-                intent.putExtra("access_token",accesstoken);
-                startActivity(intent);
+                if(queryParams.containsKey("access_token")){
+                    String accesstoken = queryParams.get("access_token");
+                    Intent intent = new Intent(Login_Activity.this, MainActivity.class);
+                    intent.putExtra("access_token", accesstoken);
+                    startActivity(intent);
+                    Log.e("URi data", "uri data is not null" + accesstoken);
+                }else {
+
+                    Toast.makeText(getApplicationContext(),"Please Allow To Access Your facebook Account.",3).show();
+
+                }
             Log.e("Get Auth Token", " params are  " + queryParams.toString());
-            Log.e("URi data", "uri data is not null" + accesstoken);
 
     }catch (Exception e){
                 e.printStackTrace();
